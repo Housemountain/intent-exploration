@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output, State
 from dash import Input, Output, State, ALL, callback, ctx
+import plotly.express as px
 
 
 # initialize app
