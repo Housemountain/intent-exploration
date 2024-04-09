@@ -54,7 +54,7 @@ layout = dbc.Container(
         dbc.Row([
             dbc.Col(dcc.Graph(id="intent_exploring_graph", style={'width': '100%', 'height': '80vh'}), width=10),
             dbc.Col([
-                html.H5("Selected Playlist Profile", style={'textAlign': 'center'}),
+                html.H5("Playlist Profile", style={'textAlign': 'center'}),
                 html.Br(),
                 dcc.Markdown(id="selected_playlist_info")
             ], width=2)
@@ -100,7 +100,7 @@ def on_playlist_name_changed(model_name):
     Input('intent_exploring_graph', 'clickData'))
 def display_click_data(clickData):
     if clickData is None:
-        return "No playlist selected."
+        return "Please click on a playlist in the graph to get more information."
     print(clickData['points'][0].keys())
     playlist_name = clickData['points'][0]["customdata"][0]
 
