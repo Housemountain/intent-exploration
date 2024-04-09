@@ -28,7 +28,10 @@ layout = dbc.Container(
         html.Br(),
         dbc.Row(html.H1("Intent exploration of Playlists", style={'textAlign': 'center'})),
         html.Br(),
+        html.P(
+            "In this dashboard, you can explore playlists in terms of intent. Similarity between playlist titles and cluster of music functions are computed and used to determine the intention of a playlist. Similar playlist titles are found through the vector of similarity scores to the clusters."),
         html.Br(),
+        html.H5("Select model for computing similarity to clusters", style={'textAlign': 'center'}),
         dbc.Row(dbc.RadioItems(
             id="choice_model",
             className="btn-group",
@@ -51,7 +54,7 @@ layout = dbc.Container(
         dbc.Row([
             dbc.Col(dcc.Graph(id="intent_exploring_graph", style={'width': '100%', 'height': '80vh'}), width=10),
             dbc.Col([
-                html.H4("Selected Playlist Profile", style={'textAlign': 'center'}),
+                html.H5("Selected Playlist Profile", style={'textAlign': 'center'}),
                 html.Br(),
                 dcc.Markdown(id="selected_playlist_info")
             ], width=2)
