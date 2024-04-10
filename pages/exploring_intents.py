@@ -10,9 +10,11 @@ import plotly.express as px
 # initialize app
 dash.register_page(__name__, path="/exploring_intent")
 
-df_coords = pd.read_json("data/coords.json")
+PYTHONANYWHERE_PATH = '/home/jkucpannah/fwf-intent-exploration'
+
+df_coords = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/coords.json")
 df_coords['intent'] = df_coords['cluster']
-df_sim_playlists = pd.read_json("data/most_sim_playlists.json")
+df_sim_playlists = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/most_sim_playlists.json")
 
 df_coords_ = None
 df_sim_ = None
