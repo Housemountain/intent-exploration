@@ -26,10 +26,15 @@ layout = dbc.Container(
     [
         html.Br(),
         html.Br(),
-        dbc.Row(html.H1("Intent exploration of Playlists", style={'textAlign': 'center'})),
+        dbc.Row(html.H1("Investigating Music Listening Intents in User-generated Playlist Titles", style={'textAlign': 'center'})),
         html.Br(),
-        html.P(
-            "In this dashboard, you can explore playlists mapped to a music listening intent and showing similar playlists in terms of listening intent. An intent consists of multiple music listening function, which describes a reason to listen to music. In this space, the playlist titles are mapped to one of the intents, and similar playlists are found through cosine similarity over the similarity intent vector."),
+        dcc.Markdown(
+            """People listen to music for various reasons, for which the underlying listening intents can be broken down into concrete music listening functions. %Music listening functions can be defined as reasons people listen to music. 
+These have been identified through empirical studies in music psychology, commonly using interviews and surveys. 
+In this paper, we take a data-driven approach that adopts data augmentation techniques via large language models, pre-trained Sentence Transformers and Cross Encoder, and graph-based clustering to explore the occurring music listening intents in user-generated playlists by comparing the title to the listening intents.
+For this purpose, we first investigate whether 129 established listening functions, previously identified through a survey, can be meaningfully clustered into larger listening intents. The resulting clusters are evaluated through a pilot survey.
+Given the encouraging results of the evaluation of the computed clusters (92\% of clusters judged consistent by participants), we match the playlist titles to the listening functions, and compute the similarity score for each intent cluster. Based on the similarity score vector, we determine the intent of a playlist, and investigate measures to ensure a playlist can be assigned to an intent or not. Further, we retrieve similar playlists on basis of this similarity score vector.
+We present a dashboard to explore playlists in an intent space to find similar playlists on the basis of intent."""),
         html.Br(),
         html.H5("Select model for computing similarity to clusters", style={'textAlign': 'center'}),
         dbc.Row(dbc.RadioItems(
