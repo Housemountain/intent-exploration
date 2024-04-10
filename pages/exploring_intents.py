@@ -10,7 +10,7 @@ import plotly.express as px
 # initialize app
 dash.register_page(__name__, path="/exploring_intent")
 
-PYTHONANYWHERE_PATH = ''
+PYTHONANYWHERE_PATH = '/home/ismir20241B0D/intent-exploration'
 
 df_coords = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/coords.json")
 df_coords['intent'] = df_coords['cluster']
