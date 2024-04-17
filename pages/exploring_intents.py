@@ -11,10 +11,13 @@ import plotly.express as px
 dash.register_page(__name__, path="/exploring_intent")
 
 PYTHONANYWHERE_PATH = '/home/ismir20241B0D/intent-exploration'
+#PYTHONANYWHERE_PATH = './'
 
-df_coords = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/coords.json")
+df_coords = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/coords_small.json")
 df_coords['intent'] = df_coords['cluster']
 df_sim_playlists = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/most_sim_playlists.json")
+
+df_spotify_playlists = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/million_playlists_spotify.json")
 
 df_coords_ = None
 df_sim_ = None
@@ -33,7 +36,7 @@ layout = dbc.Container(
 These have been identified through empirical studies in music psychology, commonly using interviews and surveys. 
 In this paper, we take a data-driven approach that adopts data augmentation techniques via large language models, pre-trained Sentence Transformers and Cross Encoder, and graph-based clustering to explore the occurring music listening intents in user-generated playlists by comparing the title to the listening intents.
 For this purpose, we first investigate whether 129 established listening functions, previously identified through a survey, can be meaningfully clustered into larger listening intents. The resulting clusters are evaluated through a pilot survey.
-Given the encouraging results of the evaluation of the computed clusters (92\% of clusters judged consistent by participants), we match the playlist titles to the listening functions, and compute the similarity score for each intent cluster. Based on the similarity score vector, we determine the intent of a playlist, and investigate measures to ensure a playlist can be assigned to an intent or not. Further, we retrieve similar playlists on basis of this similarity score vector.
+Given the encouraging results of the evaluation of the computed clusters (92% of clusters judged consistent by participants), we match the playlist titles to the listening functions, and compute the similarity score for each intent cluster. Based on the similarity score vector, we determine the intent of a playlist, and investigate measures to ensure a playlist can be assigned to an intent or not. Further, we retrieve similar playlists on basis of this similarity score vector.
 We present a dashboard to explore playlists in an intent space to find similar playlists on the basis of intent."""),
         html.Br(),
         html.H5("Select model for computing similarity to clusters", style={'textAlign': 'center'}),
@@ -82,7 +85,14 @@ We present a dashboard to explore playlists in an intent space to find similar p
             dbc.Col([
                 html.H5("Playlist Profile", style={'textAlign': 'center'}),
                 html.Br(),
-                dcc.Markdown(id="selected_playlist_info")
+                dcc.Markdown(id="selected_playlist_info"),
+                dbc.Button(
+                    "Open Playlist in Spotify",
+                    id="playlist_embed_01",
+                    className="ml-auto",
+                    href='',
+                    target="_blank"
+                ),
             ], width=2)
         ], justify="center")
     ]
@@ -124,7 +134,8 @@ def on_playlist_name_changed(model_name, choice_text):
 
 
 @callback(
-    Output('selected_playlist_info', 'children'),
+    [Output('selected_playlist_info', 'children'),
+     Output('playlist_embed_01', 'href')],
     [
         Input("choice_model", "value"),
         Input("choice_text", "value"),
@@ -153,6 +164,15 @@ def display_click_data(model, text, clickData):
     Similarity Score: {df_p_c['sim_score'].iloc[0]}
 
     Similar playlists: {",".join(df_p['most_sim_playlists'].iloc[0])}
+    
     """
 
-    return info
+    url = df_spotify_playlists[df_spotify_playlists['playlist_name'] == playlist_name]['playlist_spotify_id']
+
+    if len(url) > 0:
+        url = 'https://open.spotify.com/playlist/' + url.iloc[0]
+        print("RELOAD: ", url)
+    else:
+        url = 'https://open.spotify.com/'
+
+    return info, url
