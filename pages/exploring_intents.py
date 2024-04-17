@@ -167,12 +167,6 @@ def display_click_data(model, text, clickData):
     
     """
 
-    url = df_spotify_playlists[df_spotify_playlists['playlist_name'] == playlist_name]['playlist_spotify_id']
-
-    if len(url) > 0:
-        url = 'https://open.spotify.com/playlist/' + url.iloc[0]
-        print("RELOAD: ", url)
-    else:
-        url = 'https://open.spotify.com/'
+    url = 'https://open.spotify.com/search/' + playlist_name + '/playlists'
 
     return info, url
