@@ -17,10 +17,25 @@ dash.register_page(__name__, path="/exploring_intent")
 PYTHONANYWHERE_PATH = '/home/ismir20241B0D/intent-exploration'
 # PYTHONANYWHERE_PATH = './'
 
-df_intent = pd.read_json("./data/new_cluster_data.json")
-df_playlists = pd.read_json("./data/playlist_data.json")
+df_intent = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/new_cluster_data.json")
+df_playlists = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/playlist_data_scored.json")
+df_playlists = df_playlists[(df_playlists['scored'] == True) & (df_playlists['scaled'] == True)]
+t_to_c_score = {"playlist": [], "model": [], "query": []}
 
-model_to_name = {0: "cross-encoder/stsb-roberta-base",
+for t, m, q, i_vec in zip(df_playlists['playlist'], df_playlists['model'], df_playlists['query'],
+                          df_playlists['intent_vec']):
+    t_to_c_score["playlist"].append(t)
+    t_to_c_score["model"].append(m)
+    t_to_c_score["query"].append(q)
+
+    for idx, s in enumerate(i_vec):
+        if f"c_{idx}" not in t_to_c_score:
+            t_to_c_score[f"c_{idx}"] = []
+        t_to_c_score[f"c_{idx}"].append(s)
+
+t_to_c_score = pd.DataFrame(t_to_c_score)
+
+model_to_name = {0: "stsb-roberta-base",
                  1: "all-mpnet-base-v2",
                  2: "quora-distilbert-base",
                  3: "all-MiniLM-L12-v2",
@@ -141,35 +156,33 @@ def make_fig(df_p):
     ]
 )
 def on_query_selected(choice_text):
-
     if choice_text is None or len(choice_text) <= 0:
         return [html.H5("Choose a query to get more information about the intent.",
                         style={'textAlign': 'center'})],
     model_selection = [html.H5("Select model for computing similarity to clusters", style={'textAlign': 'center'}),
-        dbc.Row(
-            dcc.Tabs(id="choice_model", value="0", children=[
-                dcc.Tab(label = "Cross Encoder (stsb-roberta-base)", value="0"),
-                dcc.Tab(label="Sentence Transformer (all-mpnet-base-v2)", value="1"),
-                dcc.Tab(label="Sentence Transformer (quora-distilbert-base)", value="2"),
-                dcc.Tab(label="Sentence Transformer (all-MiniLM-L12-v2)", value="3"),
-                dcc.Tab(label="Ensemble", value="4")
-            ],
-            style={"width": "100%",
-                   "display": 'flex',
-                   "flex-direction": 'row',
-                   'justify-content':
-                       'center',
-                   'justify': 'center',
-                   'align-items': 'center'},
-        ), ),
-        html.Br(),]
-
+                       dbc.Row(
+                           dcc.Tabs(id="choice_model", value="0", children=[
+                               dcc.Tab(label="Cross Encoder (stsb-roberta-base)", value="0"),
+                               dcc.Tab(label="Sentence Transformer (all-mpnet-base-v2)", value="1"),
+                               dcc.Tab(label="Sentence Transformer (quora-distilbert-base)", value="2"),
+                               dcc.Tab(label="Sentence Transformer (all-MiniLM-L12-v2)", value="3"),
+                               dcc.Tab(label="Ensemble", value="4")
+                           ],
+                                    style={"width": "100%",
+                                           "display": 'flex',
+                                           "flex-direction": 'row',
+                                           'justify-content':
+                                               'center',
+                                           'justify': 'center',
+                                           'align-items': 'center'},
+                                    ), ),
+                       html.Br(), ]
 
     return model_selection,
 
 
 @callback([Output("row_intent", "children"), Output("row_most_sim", "children"), Output("row_graph", "children")],
-          [ Input("choice_text", "value"), Input("choice_model", "value")])
+          [Input("choice_text", "value"), Input("choice_model", "value")])
 def change_information(current_query, model_name):
     df_model = df_playlists[(df_playlists['model'] == model_to_name[int(model_name)])]
 
@@ -180,28 +193,30 @@ def change_information(current_query, model_name):
     other = np.array([np.array(i) for i in df_p['intent_vec']])
 
     sim = cosine_similarity(q_intent_vec.reshape(1, -1), other)[0]
-    df_p['sim'] = sim
+    df_p['sim'] = [f'{s:.2f}' for s in sim]
 
     df_p = df_p.sort_values(by=['sim'], ascending=False)
 
-    playlists = list(df_p.head(10)['playlist']) + [current_query]
+    playlists = list(df_p.head(100)['playlist']) + [current_query]
     df_to_viz = df_model[df_model['playlist'].isin(playlists)]
 
     fig = make_fig(df_to_viz)
 
     row_intent = [
         html.H5("Intent of Query", style={'textAlign': 'center'}),
-        dcc.Markdown(f"""The intent of this query has the main listening function: **{df_query['main function']}**""",  style={'textAlign': 'center'})
+        dcc.Markdown(f"""The intent of this query has the main listening function: **{df_query['main function']}**""",
+                     style={'textAlign': 'center'})
     ]
 
     row_most_sim = [
         html.H5("Top 10 most similar Playlists to Query", style={'textAlign': 'center'}),
-        dbc.Table.from_dataframe(df_p[['playlist', 'sim', 'main function']].head(10), striped=True, bordered=True, hover=True)
+        dbc.Table.from_dataframe(df_p[['playlist', 'sim', 'main function']].head(10), striped=True, bordered=True,
+                                 hover=True)
     ]
 
-    row_graph = [html.H5(f"Query visualized in lower space with Top 10 most similar Playlists with Intent", style={'textAlign': 'center'}),
-            dcc.Graph(id="intent_exploring_graph", figure=fig, style={'width': '100%', 'height': '80vh'})]
-
+    row_graph = [html.H5(f"Query visualized in lower space with Top 100 most similar Playlists with Intent",
+                         style={'textAlign': 'center'}),
+                 dcc.Graph(id="intent_exploring_graph", figure=fig, style={'width': '100%', 'height': '80vh'})]
 
     return row_intent, row_most_sim, row_graph
 
@@ -232,7 +247,7 @@ def display_click_data(model, query, clickData):
     Intent: {df_p_c['intent'].iloc[0]}
 
     Similarity Score: {df_p_c['sim_score'].iloc[0]}
-    
+
     """
 
     url = 'https://open.spotify.com/search/' + playlist_name + '/playlists'
@@ -260,24 +275,28 @@ def display_intent_data(mf):
     c_idx = df_mf['cluster']
 
     playlist_data = {t: [] for t in idx_to_title.values()}
-    for idx, model in model_to_name.items():# idx_to_title.items():
-        df_model = df_playlists[(df_playlists['model'] == model) & (df_playlists['query'] == False) & (df_playlists['intent'] == c_idx)].sort_values(by=["score"], ascending=False).head()
-        playlists = [f"{p} ({s})" for p, s in zip(df_model['playlist'], df_model['score'])]
-        if len(playlists) < 5:
-            playlists.extend(["-" for _ in range(5-len(playlists))])
+    for idx, model in model_to_name.items():  # idx_to_title.items():
+        df_model = t_to_c_score[(t_to_c_score['model'] == model) & (t_to_c_score['query'] == False)].sort_values(
+            by=[f"c_{c_idx}"], ascending=False).head()
+        playlists = [f"{p} ({s:.2f})" for p, s in zip(df_model['playlist'], df_model[f'c_{c_idx}'])]
         playlist_data[idx_to_title[idx]] = playlists
 
+    for k, v in playlist_data.items():
+        print(k, len(v))
     df_playlist_data = pd.DataFrame(playlist_data)
     print(df_mf.keys())
 
-    new_df = {"Music Listening Function": [f'{f} (Main)' if f == mf else f for f in list(df_mf['questions'])], "Score": list(df_mf['survey'])}
+    new_df = {"Music Listening Function": [f'{f} (Main)' if f == mf else f for f in list(df_mf['questions'])],
+              "Score": list(df_mf['survey'])}
     new_df = pd.DataFrame(new_df).sort_values(by=["Score"], ascending=False)
 
     names = list(set([title.strip() for title in list(set(df_mf['given_names'])) if title is not None]))
     print(names)
     cols = []
     all_cols = [html.H5("Names given to this intent", style={'textAlign': 'center'}),
-                dcc.Markdown("""The names were given by the participants of our survey based on how they perceived the intent of the cluster of music listening functions.""", style={'textAlign': 'center'})]
+                dcc.Markdown(
+                    """The names were given by the participants of our survey based on how they perceived the intent of the cluster of music listening functions.""",
+                    style={'textAlign': 'center'})]
     for n in names:
         if n is not None and len(n) > 0:
             cols.append(dbc.Col(dbc.Card(n, body=True, style={'justify-content': 'center', 'justify': 'center',
@@ -299,8 +318,8 @@ def display_intent_data(mf):
         all_cols.append(dbc.Row(cols, style={"width": "80%",
                                              "display": 'flex',
                                              "flex-direction": 'row',
-                                                 'margin-top': '12px',
-                                                 'margin-bottom': '12px',
+                                             'margin-top': '12px',
+                                             'margin-bottom': '12px',
                                              'justify-content':
                                                  'center',
                                              'justify': 'center',
@@ -309,15 +328,18 @@ def display_intent_data(mf):
         html.Br(),
         html.Br(),
         html.H5("Intent Cluster",
-                        style={'textAlign': 'center'}), dcc.Markdown("""The following table shows all music functions assigned to this cluster. 
+                style={'textAlign': 'center'}), dcc.Markdown("""The following table shows all music functions assigned to this cluster. 
                         The score indicates how often the music function was selected to be in the same intent cluster as the main function. 
                         The score ranges from 0 to 1, where 1 indicates that all 10 people have selected this music function OR the music function is the main music function. 
                         The main music function has been selected to be the function with the highest mean similarity to all music functions in the cluster."""),
         html.Br(),
-        dbc.Table.from_dataframe(new_df, striped=True, bordered=True, hover=True)], all_cols, [dcc.Markdown(f"""People listen to this intent on average: **{np.array(df_mf['listen']).mean()}** (0 == 'Never', 10 == 'Daily')""", style={'textAlign': 'center'})], [
+        dbc.Table.from_dataframe(new_df, striped=True, bordered=True, hover=True)], all_cols, [dcc.Markdown(
+        f"""People listen to this intent on average: **{np.array(df_mf['listen']).mean()}** (0 == 'Never', 10 == 'Daily')""",
+        style={'textAlign': 'center'})], [
         html.Br(),
-        html.H5("Top 5 Playlists with Intent",
-                style={'textAlign': 'center'}), dcc.Markdown("""The following table shows the top 5 playlists with the classified intent sorted by score for the used models to compute the intent vector."""),
+        html.H5("Top 5 Playlists with highest score for this intent",
+                style={'textAlign': 'center'}), dcc.Markdown(
+            """The following table shows the top 5 playlists with the classified intent sorted by score for the used models to compute the intent vector."""),
         html.Br(),
         dbc.Table.from_dataframe(df_playlist_data, striped=True, bordered=True, hover=True)
     ]
