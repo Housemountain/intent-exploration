@@ -208,9 +208,18 @@ def change_information(current_query, model_name):
                      style={'textAlign': 'center'})
     ]
 
+    def get_url(row):
+        return f"""<a
+        href = "https://open.spotify.com/search/{row}/playlists"
+        target = "_blank" >{row}</a>"""
+
+    df_p['Playlist'] = df_p['playlist'].apply(get_url)
+    df_p['Similarity'] = df_p['sim']
+    df_p['Main Function'] = df_p['main function']
+
     row_most_sim = [
         html.H5("Top 10 most similar Playlists to Query", style={'textAlign': 'center'}),
-        dbc.Table.from_dataframe(df_p[['playlist', 'sim', 'main function']].head(10), striped=True, bordered=True,
+        dbc.Table.from_dataframe(df_p[['Playlist', 'Similarity', 'Main Function']].head(10), striped=True, bordered=True,
                                  hover=True)
     ]
 
