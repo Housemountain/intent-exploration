@@ -15,7 +15,7 @@ from sqlalchemy.cyextension.resultproxy import rowproxy_reconstructor
 dash.register_page(__name__, path="/exploring_intent")
 
 PYTHONANYWHERE_PATH = '/home/ismir20241B0D/intent-exploration'
-# PYTHONANYWHERE_PATH = './'
+PYTHONANYWHERE_PATH = './'
 
 df_intent = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/new_cluster_data.json")
 df_playlists = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/playlist_data_scored.json")
@@ -209,9 +209,7 @@ def change_information(current_query, model_name):
     ]
 
     def get_url(row):
-        return f"""<a
-        href = "https://open.spotify.com/search/{row}/playlists"
-        target = "_blank" >{row}</a>"""
+        return html.A(row, href=f"https://open.spotify.com/search/{row}/playlists", target="_blank")
 
     df_p['Playlist'] = df_p['playlist'].apply(get_url)
     df_p['Similarity'] = df_p['sim']
