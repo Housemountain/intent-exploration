@@ -19,7 +19,7 @@ dash.register_page(__name__, path="/exploring_intent")
 
 PYTHONANYWHERE_PATH = '/home/ismir20241B0D/intent-exploration'
 PYTHONANYWHERE_PATH = '/home/eximb/mysite/intent-exploration'
-PYTHONANYWHERE_PATH = './'
+#PYTHONANYWHERE_PATH = './'
 
 df_intent = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/new_cluster_data.json")
 
