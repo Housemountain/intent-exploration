@@ -19,7 +19,7 @@ dash.register_page(__name__, path="/exploring_intent")
 
 PYTHONANYWHERE_PATH = '/home/ismir20241B0D/intent-exploration'
 PYTHONANYWHERE_PATH = '/home/eximb/mysite/intent-exploration'
-#PYTHONANYWHERE_PATH = './'
+PYTHONANYWHERE_PATH = './'
 
 df_intent = pd.read_json(f"{PYTHONANYWHERE_PATH}/data/new_cluster_data.json")
 
@@ -73,16 +73,35 @@ layout = dbc.Container(
     [
         html.Br(),
         html.Br(),
-        dbc.Row(html.H1("Investigating Music Listening Intents in User-generated Playlist Titles",
+        dbc.Row(html.H1("ExIM: Exploring Intent of Music Listening for Retrieving User-generated Playlists",
                         style={'textAlign': 'center'})),
         html.Br(),
         dcc.Markdown(
-            """People listen to music for various reasons, for which the underlying listening intents can be broken down into concrete music listening functions. %Music listening functions can be defined as reasons people listen to music. 
-These have been identified through empirical studies in music psychology, commonly using interviews and surveys. 
-In this paper, we take a data-driven approach that adopts data augmentation techniques via large language models, pre-trained Sentence Transformers and Cross Encoder, and graph-based clustering to explore the occurring music listening intents in user-generated playlists by comparing the title to the listening intents.
-For this purpose, we first investigate whether 129 established listening functions, previously identified through a survey, can be meaningfully clustered into larger listening intents. The resulting clusters are evaluated through a pilot survey.
-Given the encouraging results of the evaluation of the computed clusters (92% of clusters judged consistent by participants), we match the playlist titles to the listening functions, and compute the similarity score for each intent cluster. Based on the similarity score vector, we determine the intent of a playlist, and investigate measures to ensure a playlist can be assigned to an intent or not. Further, we retrieve similar playlists on basis of this similarity score vector.
-We present a dashboard to explore playlists in an intent space to find similar playlists on the basis of intent."""),
+            """Music psychology has identified various reasons why people listen
+to music, based on empirical evidence from interviews and sur-
+veys. In this paper, we take a data-driven approach that adopts
+both pre-trained Sentence Transformers and Cross Encoder, as
+well as graph-based clustering to first determine music listening
+intents and then explore user-generated playlists by comparing the
+title to the listening intents. For this purpose, we first investigated
+whether 129 established listening functions, previously identified by
+Schäfer et al. (2013), could be meaningfully clustered into broader
+listening intents. While Schäfer et al. (2013) introduced three broad
+dimensions of music listening, this work aimed to identify smaller,
+context-specific intents to capture more nuanced intents. The re-
+sulting clusters were then evaluated through a first survey to select
+the clusters of the best performing model. In a second survey, music
+listening intent clusters were explored in more detail to obtain a
+deeper understanding of their significance for music retrieval and
+recommendation. Lastly, the playlist selection per intent and char-
+acteristics of listening with intent were further explored through
+a third survey. Given the encouraging results of the evaluation of
+the computed clusters (92% of clusters judged consistent by partici-
+pants) and the insight that most (> 50%) of the participants search
+for playlists for a specific intent, we propose a browsing system
+that categorizes playlists based on their intent and enables users
+to explore similar playlists. Our approach is further visualized in a
+dashboard to explore and browse through playlists in intent space."""),
         html.Br(),
         html.Br(),
         html.H2("Browsing by Intent", style={'textAlign': 'center'}),
